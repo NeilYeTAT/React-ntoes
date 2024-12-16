@@ -127,6 +127,7 @@ function App() {
 
 保存任何值的引用!! current 属性上就是保存的值.
 useRef 一般是用来存一些不是用于渲染的内容的.
+ref.current 的值改了不会触发重新渲染
 
 forwardRef 略, react 19 已废弃
 
