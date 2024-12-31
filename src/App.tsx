@@ -1,30 +1,13 @@
-import { useLayoutEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 
-async function queryData() {
-  const data = await new Promise<number>((resolve) => {
-    setTimeout(() => {
-      resolve(666);
-    }, 2000);
-  });
-  return data;
-}
+const LazyMainView = lazy(() => import("./MainView"));
 
 function App() {
-  const [num, setNum] = useState(0);
-
-  useLayoutEffect(() => {
-    queryData().then((data) => {
-      setNum(data);
-    });
-  }, []);
-
   return (
-    <div
-      onClick={(e) => {
-        setNum((prevNum) => prevNum + 1);
-      }}
-    >
-      {num}
+    <div>
+      <Suspense fallback={<div>loading...</div>}>
+        <LazyMainView />
+      </Suspense>
     </div>
   );
 }
