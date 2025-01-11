@@ -1,13 +1,28 @@
-import { lazy, Suspense } from "react";
+import { useRef } from "react";
 
-const LazyMainView = lazy(() => import("./MainView"));
+function MyInput({ ref }) {
+  return <input ref={ref} />;
+}
+
+function Form() {
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus();
+  }
+
+  return (
+    <>
+      <MyInput ref={inputRef} />
+      <button onClick={handleClick}>聚焦输入框</button>
+    </>
+  );
+}
 
 function App() {
   return (
     <div>
-      <Suspense fallback={<div>loading...</div>}>
-        <LazyMainView />
-      </Suspense>
+      <Form></Form>
     </div>
   );
 }
