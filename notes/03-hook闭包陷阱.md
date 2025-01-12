@@ -1,4 +1,7 @@
-React 中会产生闭包的原因无非就是：组件渲染的本质就是调用组件函数，函数执行会创建函数作用域，组件初次渲染时作用域里的 state 是 1，组件第二次渲染二次执行组件函数会创建新的作用域，作用域的查找方式是根据函数的词法作用域向上查找，定时器里的函数引用的 state 值还是组件初次渲染时的值，会产生闭包.
+React 中会产生闭包的原因无非就是：组件渲染的本质就是调用组件函数，函数执行会创建函数作用域.
+组件初次渲染时作用域里的 state 是 0, 组件第二次渲染二次执行组件函数会创建新的作用域
+作用域的查找方式是根据函数的词法作用域向上查找,
+定时器里的函数引用的 state 值还是组件初次渲染时的值，会产生闭包.
 
 示例:
 
@@ -17,20 +20,23 @@ function App() {
 }
 ```
 
-执行结果就是控制台输出的 count 一直是 0, 页面只有第一次从 0 -> 1.
+1. App 函数执行, 被挂载到 DOM 上, 展示 count 为 0.
+2. useEffect 执行.
+3. setInterval 执行, 打印 count 为 0, setCount 函数调用.
+4. App 函数重新渲染, 但 useEffect 并没有重新执行.
+5. 因此 useEffect 中 count 变量引用的是上一个 App 函数中的值, 形成闭包.
 
-产生闭包陷阱的原因是 setInterval 中的回调函数对外部变量（比如 count）的捕获方式导致的.
-setInterval 的回调闭包捕获了第一册 App 函数中的 count 值对吗， 这个 App 函数在内存中也没有释放.
+执行结果就是控制台输出的 count 一直是 0, 页面只有第一次从 0 -> 1.
 
 ### 解法一
 
-使用 setState 中的函数式参数, prev 为上一次的状态, 而不是直接拿 count 值, 所以没有闭包产生.
+使用 setState 中的函数式参数, prev 为先前的**状态**, 而不是直接拿 count 值, 所以没有闭包产生.
 或者使用 useReducer, 不直接引用 state, 所以也不会产生闭包.
 
 ```tsx
 useEffect(() => {
   setInterval(() => {
-    // console.log(count, "count"); <- 会产生闭包
+    // console.log(count, "count"); <- 依然会产生闭包
     setCount((prev) => prev + 1);
   }, 1000);
 }, []);
@@ -49,7 +55,12 @@ useEffect(() => {
 
 ### 解法三
 
-定时器不能重新跑 effect 函数.
+**需求:**
+页面每秒展示内容 控制台每秒打印一个数字.
+
+**解决**
+页面要每秒展示内容, 那么每秒都要刷新页面, 更新组件, 使用 setState 来更新.
+
 useRef 保存 `setState` 函数.
 每次触发渲染时, 更新 `ref.current`, 保证拿到最新的 state 值.
 
@@ -57,10 +68,12 @@ useRef 保存 `setState` 函数.
 const [count, setCount] = useState(0);
 
 const updateCount = () => {
+  console.log(count + 1);
   setCount(count + 1);
 };
 const ref = useRef(updateCount);
 
+// 组件刷新时更新
 ref.current = updateCount;
 
 useEffect(() => {
@@ -71,6 +84,8 @@ useEffect(() => {
 ```
 
 封装成 hook:
+**作用**: 间隔执行函数.
+
 useLayoutEffect 里更新 ref.current 的值，它是在 dom 操作完之后同步执行的，比 useEffect 更早.
 
 ```tsx
