@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+function App() {
+  return <YeCalendar />;
+}
+
 interface ICalendarType {
   defaultValue?: Date;
   onChange?: (date: Date) => void;
@@ -20,7 +24,7 @@ const monthName = [
   "十二",
 ];
 
-const daysOfTheWeek = ["日", "一", "二", "三", "四", "五", "六"];
+const daysOfTheWeek: string[] = ["日", "一", "二", "三", "四", "五", "六"];
 
 // 一个月有多少天
 const daysOfMonth = (year: number, month: number) => {
@@ -31,6 +35,7 @@ const firstDayOfMonth = (year: number, month: number) => {
   return new Date(year, month, 1).getDay();
 };
 
+// * -----------
 const YeCalendar: React.FC<ICalendarType> = (props) => {
   const { defaultValue, onChange } = props;
   const [date, setDate] = useState(defaultValue || new Date());
@@ -117,7 +122,7 @@ const YeCalendar: React.FC<ICalendarType> = (props) => {
 
   //* 渲染组件的函数
   const renderDates = () => {
-    const days: React.ReactElement[] = [];
+    const days: JSX.Element[] = [];
 
     renderPreviousDates(days);
     renderCurrentDates(days);
@@ -167,13 +172,5 @@ const YeCalendar: React.FC<ICalendarType> = (props) => {
     </div>
   );
 };
-
-function App() {
-  return (
-    <div>
-      <YeCalendar defaultValue={new Date()} />
-    </div>
-  );
-}
 
 export default App;
